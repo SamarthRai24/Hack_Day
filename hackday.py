@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import google.generativeai as genai
 import json
@@ -1141,12 +1142,26 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
-    api_key = st.text_input(
-        "Gemini API Key",
-        type="password",
-        placeholder="AIzaSy...",
-        help="Your API key is stored locally and never sent to any server"
-    )
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        api_key = st.text_input(
+            "Gemini API Key",
+            type="password",
+            placeholder="AIzaSy...",
+            help="Your API key is stored locally and never sent to any server"
+        )
+    else:
+        st.markdown("""
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2);
+                    border-radius: 12px; padding: 0.75rem; margin-bottom: 1rem;">
+            <div style="font-weight: 600; color: #10b981; font-size: 0.9rem;">
+                Using GEMINI_API_KEY from environment
+            </div>
+            <div style="color: #94a3b8; font-size: 0.8rem;">
+                Set this key in Vercel / Streamlit Cloud environment variables
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Security Note
     st.markdown("""
@@ -1641,40 +1656,6 @@ if analyze_clicked:
                         <p style="color: #64748b; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
                             {originality}
                         </p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                # ===============================
-                # SOURCES SECTION
-                # ===============================
-                sources = data.get("sources", [])
-                if sources:
-                    sources_html = ""
-                    for s in sources:
-                        trust = s.get("trust", "Medium")
-                        trust_class = trust.lower()
-                        sources_html += f"""
-                        <div class="source-card">
-                            <div class="source-icon">🔗</div>
-                            <div class="source-content">
-                                <div class="source-name">{s.get("name", "Unknown Source")}</div>
-                                <a href="{s.get("url", "#")}" target="_blank" class="source-url">{s.get("url", "No URL")}</a>
-                                <p style="color: #64748b; font-size: 0.8rem; margin-top: 6px;">{s.get("relevance", "")}</p>
-                            </div>
-                            <div class="trust-badge {trust_class}">{trust}</div>
-                        </div>
-                        """
-                    
-                    st.markdown(f"""
-                    <div class="glass-card fade-in-up delay-4">
-                        <div class="section-header">
-                            <div class="section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🔗</div>
-                            <div>
-                                <h3 class="section-title">Source Analysis</h3>
-                                <p class="section-subtitle">Suggested references & citations</p>
-                            </div>
-                        </div>
-                        {sources_html}
                     </div>
                     """, unsafe_allow_html=True)
                 
